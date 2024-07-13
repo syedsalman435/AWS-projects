@@ -203,7 +203,10 @@ Displaying index.html.)
 update api url here in fetch column
 save and make the zipfile and redeploy the code in amplfier
 check in browser and delete all this in aws as well.
+ 
 
+
+youtube link: https://www.youtube.com/watch?v=7m_q1ldzw0U&list=PLwyXYwu8kL0wMalR9iXJIPfiMYWNFWQzx
 
 
 
