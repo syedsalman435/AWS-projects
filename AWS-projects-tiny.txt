@@ -1,0 +1,209 @@
+1.build-aws-web-application.
+1.create a web page.
+2.invoke the math functionality
+3.do math
+4.store/return the math result
+--------------------------------------
+1.Amplify-- used to build and host websites(<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>To the Power of Math!</title>
+</head>
+
+<body>
+    To the Power of Math!
+</body>
+</html>
+)
+zip the html folder--aws account-amplify-new app--hostweb app--hostweb
+deply code without git provider-continue-chosefile-save-deploy(New WinRAR ZIP archive.zip)
+2.lamda-code that runs serverlessly upon some trigger
+2.aws-lamda-create-function-py3.9-create
+copy and paste code(# import the JSON utility package
+import json
+# import the Python math library
+import math
+
+# define the handler function that the Lambda service will use an entry point
+def lambda_handler(event, context):
+
+# extract the two numbers from the Lambda service's event object
+    mathResult = math.pow(int(event['base']), int(event['exponent']))
+
+    # return a properly formatted JSON object
+    return {
+    'statusCode': 200,
+    'body': json.dumps('Your result is ' + str(mathResult))
+    })...........Ctrl+S - deploy
+test-private-({
+  "base": 2,
+  "exponent": 2
+})
+base=2
+exponentioal=3
+save and run test
+3.API gateway-- used to build HTTP,RESTand websocket APIs
+API gateway--create- restapi-rest,new api,name,create api
+resource-/tab-select-action-createmethod-select post
+integration type-lambda--save
+go to resource tab and selct and action and enable cors
+ action-deploy api-
+ copy api gateway url
+ resource-post-test
+ {
+  "base": 2,
+  "exponent": 2
+} & test
+4.dynamo db & we have to permisssions on the execution role for lambda(iam)
+dynamo db-create table-p ket=ID- createtable
+goinside table and copy the ARN and past somewhere
+lambda tab-configrations-permisssions-click on rolename-add permisssions
+create inline policy and past below json code
+({
+"Version": "2012-10-17",
+"Statement": [
+    {
+        "Sid": "VisualEditor0",
+        "Effect": "Allow",
+        "Action": [
+            "dynamodb:PutItem",
+            "dynamodb:DeleteItem",
+            "dynamodb:GetItem",
+            "dynamodb:Scan",
+            "dynamodb:Query",
+            "dynamodb:UpdateItem"
+        ],
+        "Resource": "YOUR-TABLE-ARN"
+    }
+    ]
+})
+...............
+in resources.... you past dynamodb arn create policy
+lambda-copylambdafinal.txt and paste(# import the JSON utility package
+import json
+# import the Python math library
+import math
+
+# import the AWS SDK (for Python the package name is boto3)
+import boto3
+# import two packages to help us with dates and date formatting
+from time import gmtime, strftime
+
+# create a DynamoDB object using the AWS SDK
+dynamodb = boto3.resource('dynamodb')
+# use the DynamoDB object to select our table
+table = dynamodb.Table('tablenamedb???')
+# store the current time in a human readable format in a variable
+now = strftime("%a, %d %b %Y %H:%M:%S +0000", gmtime())
+
+# define the handler function that the Lambda service will use an entry point
+def lambda_handler(event, context):
+
+# extract the two numbers from the Lambda service's event object
+    mathResult = math.pow(int(event['base']), int(event['exponent']))
+
+# write result and time to the DynamoDB table using the object we instantiated and save response in a variable
+    response = table.put_item(
+        Item={
+            'ID': str(mathResult),
+            'LatestGreetingTime':now
+            })
+
+# return a properly formatted JSON object
+    return {
+    'statusCode': 200,
+    'body': json.dumps('Your result is ' + str(mathResult))
+    })
+check the table names and all &deploy & click on test
+go to db and check here it will show the data
+now make the connection to html page and this api gateway
+paste the final code in index.orginal.html content in index,html
+update this code(
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>To the Power of Math!</title>
+    <!-- Styling for the client UI -->
+    <style>
+    h1 {
+        color: #FFFFFF;
+        font-family: system-ui;
+		margin-left: 20px;
+        }
+	body {
+        background-color: #222629;
+        }
+    label {
+        color: #86C232;
+        font-family: system-ui;
+        font-size: 20px;
+        margin-left: 20px;
+		margin-top: 20px;
+        }
+     button {
+        background-color: #86C232;
+		border-color: #86C232;
+		color: #FFFFFF;
+        font-family: system-ui;
+        font-size: 20px;
+		font-weight: bold;
+        margin-left: 30px;
+		margin-top: 20px;
+		width: 140px;
+        }
+	 input {
+        color: #222629;
+        font-family: system-ui;
+        font-size: 20px;
+        margin-left: 10px;
+		margin-top: 20px;
+		width: 100px;
+        }
+    </style>
+    <script>
+        // callAPI function that takes the base and exponent numbers as parameters
+        var callAPI = (base,exponent)=>{
+            // instantiate a headers object
+            var myHeaders = new Headers();
+            // add content type header to object
+            myHeaders.append("Content-Type", "application/json");
+            // using built in JSON utility package turn object to string and store in a variable
+            var raw = JSON.stringify({"base":base,"exponent":exponent});
+            // create a JSON object with parameters for API call and store in a variable
+            var requestOptions = {
+                method: 'POST',
+                headers: myHeaders,
+                body: raw,
+                redirect: 'follow'
+            };
+            // make API call with parameters and use promises to get response
+            fetch("YOUR API GATEWAY ENDPOINT", requestOptions)
+            .then(response => response.text())
+            .then(result => alert(JSON.parse(result).body))
+            .catch(error => console.log('error', error));
+        }
+    </script>
+</head>
+<body>
+    <h1>TO THE POWER OF MATH!</h1>
+	<form>
+        <label>Base number:</label>
+        <input type="text" id="base">
+        <label>...to the power of:</label>
+        <input type="text" id="exponent">
+        <!-- set button onClick method to call function we defined passing input values as parameters -->
+        <button type="button" onclick="callAPI(document.getElementById('base').value,document.getElementById('exponent').value)">CALCULATE</button>
+    </form>
+</body>
+</html>
+index.html
+Displaying index.html.)
+update api url here in fetch column
+save and make the zipfile and redeploy the code in amplfier
+check in browser and delete all this in aws as well.
+
+
+
+
